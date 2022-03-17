@@ -23,10 +23,10 @@ df:pd.DataFrame = pd.read_sql(sql_text, connection)
 
 ```
 ### streamlit
-[streamlit](www.streamlit.io) 是以纯python方式生成web应用的超级简单的解决方案，不用为web前端费心。
+[streamlit](http://www.streamlit.io) 是以纯python方式生成web应用的超级简单的解决方案，不用为web前端费心。
 
 ### echarts
-Baidu 的echarts可以实现各种图表的绘制， [echarts](echarts.apache.org)
+Baidu 的echarts可以实现各种图表的绘制， [echarts](http://echarts.apache.org)
 ### Oracle SQL
 queryUtil.py 文件中提供了一些查询Oracle的SQL脚本，及时不懂python，也能读懂是做什么的。
 SQL稍微复杂一点的就是使用了Oracle的分析函数（也有称窗口函数）
