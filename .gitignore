@@ -4,3 +4,5 @@ etc/
 include/
 lib/
 share/
+dist/
+build/
