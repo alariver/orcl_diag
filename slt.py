@@ -84,7 +84,7 @@ def add_connection():
         st.warning('请填写完整信息.')
 
 def util_gen_awr_section(section_name,section_anchor, table_name, 
-        stat_column, value_column, is_cdb,df_pdb, include_stats:list=None, unit='ms', exclude_stats:list=None):
+        stat_column, value_column, is_cdb,df_pdb, include_stats:list=None, unit='ms', exclude_stats:list=None, value_type='wait_time_delta'):
     st.subheader(section_name, anchor=section_anchor)
     df:pd.DataFrame = query_awr_generic(st.session_state.selected_conn, datetime.datetime.now(
     ) - datetime.timedelta(1), datetime.datetime.now(), table_name, stat_column, value_column, is_cdb) if not file_uploaded else df_from_tar(section_anchor)
@@ -129,9 +129,9 @@ def util_gen_awr_section(section_name,section_anchor, table_name,
             ).unique().tolist()
             # date_index
             df_con['stat_name'] = df_con['stat_name'] +'@'+ df_con['instance_number'].astype(str)
-            df_con = df_con[['begin_interval_time','stat_name','wait_time_delta']]
+            df_con = df_con[['begin_interval_time','stat_name',value_type]]
             df_con = df_con.pivot_table(index='begin_interval_time', columns='stat_name', 
-                values='wait_time_delta', fill_value=0)
+                values=value_type, fill_value=0)
             df_con.reindex(date_index)
             
             option = {
@@ -1507,7 +1507,7 @@ if show_awr_loads:
     
     if st.checkbox('显示AWR中记录的SGA内存信息'):
         util_gen_awr_section('SGA 组件信息', 'awr-sga-stat',
-                             'cdb_hist_sgastat' if is_cdb else 'dba_hist_sgastat', 'name', 'bytes', is_cdb, df_pdb, unit='us')
+                             'cdb_hist_sgastat' if is_cdb else 'dba_hist_sgastat', 'name', 'bytes', is_cdb, df_pdb, unit='us', value_type='wait_time')
     
 
     # bg event end.
