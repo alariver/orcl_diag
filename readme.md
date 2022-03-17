@@ -1,3 +1,4 @@
+[!截图](screenshot-1.jpg)
 ## 做什么的？
 1. 通过用户在UI中提供的连接Oracle数据库的信息，连接到数据库，获取诊断信息，以表格、chart（主要使用baidu echarts）展示
 2. 通过一些checkbox，让用户选择性的显示（查询）信息
@@ -64,3 +65,4 @@ alter user c##check set container_data=all container=current;
 ```
 ssh -g -L 1521:<db_listener>:<listener_port> root@<db_server>
 ```
+
