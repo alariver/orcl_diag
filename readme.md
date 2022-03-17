@@ -51,3 +51,16 @@ python streamlit_wrapper.py
 
 ```
 提供了一个streamlit_wrapper.spec 文件，用于使用pyinstaller 打包生成可执行文件（Windows、Macos）
+
+## 关于Oracle数据库
+### 用户、权限
+下例在CDB环境（19c）中运行，非CDB环境类似
+```
+create user c##check identified by ***** default tablespace sysaux container=all;
+grant connect,resource,oem_monitor to c##check container=all;
+alter user c##check set container_data=all container=current;
+```
+对于一些受网络限制，只有到数据库服务器SSH访问权限的情况，可以利用SSH 本地代理来访问数据库:
+```
+ssh -g -L 1521:<db_listener>:<listener_port> root@<db_server>
+```
