@@ -29,7 +29,7 @@ df:pd.DataFrame = pd.read_sql(sql_text, connection)
 ### echarts
 Baidu 的echarts可以实现各种图表的绘制， [echarts](http://echarts.apache.org)
 ### Oracle SQL
-queryUtil.py 文件中提供了一些查询Oracle的SQL脚本，及时不懂python，也能读懂是做什么的。
+queryUtil.py 文件中提供了一些查询Oracle的SQL脚本，即使不懂python，也能读懂是做什么的。
 SQL稍微复杂一点的就是使用了Oracle的分析函数（也有称窗口函数）
 
 ## 运行
