@@ -486,7 +486,7 @@ if show_storage_file:
         dbf_siz = df_dbfile['bytes'].sum() / 1048576   # MB
 
 
-        st.write(pd.DataFrame(data={'数据文件数': [dbf_cnt,], '总大小(MB)': [dbf_siz,], '表空间数': tbspc_cnt}))
+        st.write(pd.DataFrame(data={'数据文件数': [dbf_cnt,], '总大小(MB)': [dbf_siz,], '表空间数': [tbspc_cnt,]}))
         st.write(df_dbfile.rename(columns=translate_word))
     else :
         st.warning('数据未存储')

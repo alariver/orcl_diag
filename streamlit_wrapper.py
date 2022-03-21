@@ -20,15 +20,18 @@ from streamlit_echarts import st_echarts
 
 from io import BytesIO, StringIO
 import tarfile
+from pathlib import Path
 
 from queryUtil import *
 
 # datas=[('/Users/changzhenghe/github/orcl_diag/lib/python3.8/site-packages/altair/','./altair/'),('/Users/changzhenghe/github/orcl_diag/slt.py','.'),('/Users/changzhenghe/github/orcl_diag/queryUtil.py','.')],
 
 def streamlit_run():
-    # this_dir = Path(__file__).parent
-    # os.chdir(this_dir)
-    # sys.path.append(this_dir.name)
+    this_dir = Path(__file__).parent
+    print('dir->', this_dir)
+    print(os.listdir(this_dir))
+    os.chdir(this_dir)
+    sys.path.append(this_dir.name)
     sys.argv = ["streamlit", "run", "slt.py",
                 "--global.developmentMode=false"]
     sys.exit(stcli.main())

@@ -22,6 +22,14 @@ a = Analysis(['streamlit_wrapper.py'],
                  (
                      "/Users/changzhenghe/github/orcl_diag/lib/python3.8/site-packages/streamlit_echarts",
                      "./streamlit_echarts"
+                 ),
+                 (
+                     "/Users/changzhenghe/github/orcl_diag/slt.py",
+                     "./"
+                 ),
+                 (
+                     "/Users/changzhenghe/github/orcl_diag/queryUtil.py",
+                     "./"
                  )],
              hiddenimports=[],
              hookspath=['.'],
