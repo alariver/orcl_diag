@@ -6,3 +6,9 @@ lib/
 share/
 dist/
 build/
+*.gz
+sqlcl-scripts/output
+gensql.py
+*.json
+*.tpl
+*.pyc

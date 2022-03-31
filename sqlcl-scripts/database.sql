@@ -4,5 +4,4 @@ SELECT
   *
 FROM v$database;
 SPOOL off;
-SET
-  SQLFORMAT ansiconsole
+SET SQLFORMAT ansiconsole

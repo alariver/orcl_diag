@@ -7,6 +7,17 @@ import sqlalchemy
 import functools
 import datetime
 
+from functools import wraps
+
+def lowdfcol(func):
+    @wraps(func)
+    def inner(*args, **kwargs):
+        df = func(*args, **kwargs)
+        df = df.rename(columns=str.lower)
+        return df
+    return inner
+
+
 def translate_word(name):
     oracle_dictionary = {
         'instance': '实例',
@@ -72,20 +83,21 @@ def translate_word(name):
 
 # @st.cache
 
-
+@lowdfcol
 def query_inst(target):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql('select * from gv$instance', engine)
 
 
 # @st.cache
+@lowdfcol
 def query_database(target):
     st.info(target)
     engine = st.session_state.connections_defined[target]
     st.write(engine)
     return pd.read_sql('select * from v$database', engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_patchinfo(target):
     # engine = st.session_state.connections_defined[target]
@@ -93,7 +105,7 @@ def query_patchinfo(target):
         from sys.registry$history
         where action_time = (select max(action_time) from sys.registry$history)''', st.session_state.connections_defined[target])
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_alert(target):
     engine = st.session_state.connections_defined[target]
@@ -101,7 +113,7 @@ def query_alert(target):
             from gv$instance i, gv$diag_info d
            where i.inst_id = d.inst_id and d.name = 'Diag Trace' ''', engine)
 
-
+@lowdfcol
 def query_arl_dest(target):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql('''select i.instance_name, d.dest_name, 'status' metric, to_char(d.status) value             from gv$archive_dest d
@@ -127,13 +139,13 @@ def query_arl_dest(target):
             and   d.inst_id = i.inst_id
             and db.log_mode = 'ARCHIVELOG'     ''', engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_fra(target):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql('select * from v$recovery_file_dest', engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_rman_bakinfo(target):
     engine = st.session_state.connections_defined[target]
@@ -141,7 +153,7 @@ def query_rman_bakinfo(target):
             where operation like 'BACKUP%'
             order by start_time''', engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_parameter(target):
     engine = st.session_state.connections_defined[target]
@@ -150,7 +162,7 @@ def query_parameter(target):
             where i.instance_number = p.inst_id
             and   p.type in (3,6) and p.isdefault = 'FALSE' ''', engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_parameter2(target):
     engine = st.session_state.connections_defined[target]
@@ -159,7 +171,7 @@ def query_parameter2(target):
             where i.instance_number = p.inst_id
             and   p.type not in (3,6) and p.isdefault = 'FALSE' ''', engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_expu(target, is_cdb):
     engine = st.session_state.connections_defined[target]
@@ -177,18 +189,18 @@ def query_expu(target, is_cdb):
             and expiry_date < (sysdate + 30)'''
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_dbfile(target):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql('select * from v$datafile', engine)
 
-
+@lowdfcol
 def query_pdb(target):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql('select * from v$containers', engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_pts(target,is_cdb):
     if is_cdb:
@@ -235,7 +247,7 @@ def query_pts(target,is_cdb):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_uts(target,is_cdb):
     if is_cdb:
@@ -280,7 +292,7 @@ def query_uts(target,is_cdb):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_tts(target,is_cdb):
     if is_cdb:
@@ -378,7 +390,7 @@ def query_tts(target,is_cdb):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_sqlarea(target,is_cdb):
     if is_cdb:
@@ -406,7 +418,7 @@ def query_sqlarea(target,is_cdb):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_generic(target, stat_column, is_cdb):
     if is_cdb:
@@ -431,49 +443,49 @@ def query_topsql_generic(target, stat_column, is_cdb):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_exec(target, is_cdb):
     return query_topsql_generic(target, 'executions', is_cdb)
     
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_sorts(target, is_cdb):
     return query_topsql_generic(target, 'sorts', is_cdb)
     
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_shm(target, is_cdb):
     return query_topsql_generic(target, 'sharable_mem', is_cdb)
     
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_pxexec(target, is_cdb):
     return query_topsql_generic(target, 'PX_SERVERS_EXECUTIONS', is_cdb)
     
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_invalid(target, is_cdb):
     return query_topsql_generic(target, 'invalidations', is_cdb)
     
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_parse(target, is_cdb):
     return query_topsql_generic(target, 'parse_calls', is_cdb)
     
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_phr(target, is_cdb):
     return query_topsql_generic(target, 'disk_reads', is_cdb)
     
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_get(target, is_cdb):
     return query_topsql_generic(target, 'buffer_gets', is_cdb)
@@ -481,7 +493,7 @@ def query_topsql_get(target, is_cdb):
 
 # application wait time
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_awt(target, is_cdb):
     return query_topsql_generic(target, 'application_wait_time', is_cdb)
@@ -489,7 +501,7 @@ def query_topsql_awt(target, is_cdb):
 
 # concurrent wait time
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_conwt(target, is_cdb):
     return query_topsql_generic(target, 'concurrency_wait_time', is_cdb)
@@ -498,7 +510,7 @@ def query_topsql_conwt(target, is_cdb):
 # cluster wait time
 
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_cluwt(target, is_cdb):
     return query_topsql_generic(target, 'cluster_wait_time', is_cdb)
@@ -506,7 +518,7 @@ def query_topsql_cluwt(target, is_cdb):
 
 # user io wait time
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_uiowt(target, is_cdb):
     return query_topsql_generic(target, 'user_io_wait_time', is_cdb)
@@ -514,7 +526,7 @@ def query_topsql_uiowt(target, is_cdb):
 
 # rows
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_rows(target, is_cdb):
     return query_topsql_generic(target, 'rows_processed', is_cdb)
@@ -522,7 +534,7 @@ def query_topsql_rows(target, is_cdb):
 
 # cpu time
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_cpu(target, is_cdb):
     return query_topsql_generic(target, 'cpu_time', is_cdb)
@@ -530,7 +542,7 @@ def query_topsql_cpu(target, is_cdb):
 
 # elapse time
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_elps(target, is_cdb):
     return query_topsql_generic(target, 'elapsed_time', is_cdb)
@@ -538,7 +550,7 @@ def query_topsql_elps(target, is_cdb):
 
 # sorts per executions
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_sortpe(target, is_cdb):
     return query_topsql_generic(target, 'sorts/executions', is_cdb)
@@ -546,7 +558,7 @@ def query_topsql_sortpe(target, is_cdb):
 
 # parses per execution
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_parsepe(target, is_cdb):
     return query_topsql_generic(target, 'parse_calls/executions', is_cdb)
@@ -554,7 +566,7 @@ def query_topsql_parsepe(target, is_cdb):
 
 # buffer gets per exec
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_getpe(target, is_cdb):
     return query_topsql_generic(target, 'buffer_gets/executions', is_cdb)
@@ -562,7 +574,7 @@ def query_topsql_getpe(target, is_cdb):
 
 # disk reads per execution
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_phrpe(target, is_cdb):
     return query_topsql_generic(target, 'disk_reads/executions', is_cdb)
@@ -570,6 +582,7 @@ def query_topsql_phrpe(target, is_cdb):
 
 
 # application wait time per exec
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_awtpe(target, is_cdb):
     return query_topsql_generic(target, 'application_wait_time/executions', is_cdb)
@@ -577,7 +590,7 @@ def query_topsql_awtpe(target, is_cdb):
 
 # concurrency wait time per exec
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_conwt_pe(target, is_cdb):
     return query_topsql_generic(target, 'concurrency_wait_time/executions', is_cdb)
@@ -585,7 +598,7 @@ def query_topsql_conwt_pe(target, is_cdb):
 
 # cluster wait time per exec
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_cluwt_pe(target,is_cdb):
     return query_topsql_generic(target, 'cluster_wait_time/executions', is_cdb)
@@ -593,7 +606,7 @@ def query_topsql_cluwt_pe(target,is_cdb):
 
 # user io wait per exec
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_uiowt_pe(target,is_cdb):
     return query_topsql_generic(target, 'user_io_wait_time/executions', is_cdb)
@@ -601,7 +614,7 @@ def query_topsql_uiowt_pe(target,is_cdb):
 
 # rows processed per exec
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_rows_pe(target, is_cdb):
     return query_topsql_generic(target, 'rows_processed/executions', is_cdb)
@@ -609,7 +622,7 @@ def query_topsql_rows_pe(target, is_cdb):
 
 # cpu time per exec
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_cpu_pe(target, is_cdb):
     return query_topsql_generic(target, 'cpu_time/executions', is_cdb)
@@ -617,13 +630,13 @@ def query_topsql_cpu_pe(target, is_cdb):
 
 # elapsed time per exec
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_topsql_elps_pe(target, is_cdb):
     return query_topsql_generic(target, 'elapsed_time/executions', is_cdb)
     
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_fileio(target, is_cdb):
     if is_cdb:
@@ -639,7 +652,7 @@ def query_fileio(target, is_cdb):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_tmpio(target, is_cdb):
     if is_cdb:
@@ -655,21 +668,21 @@ def query_tmpio(target, is_cdb):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_controlfile(target):
     sql = 'select * from v$controlfile'
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_logfile(target):
     sql = 'select l.group# group_id,l.thread# thread_id,bytes,archived,l.status,member from v$log l, v$logfile lf where l.group#=lf.group#'
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_user_privs(target, is_cdb):
     if is_cdb:
@@ -694,7 +707,7 @@ def query_user_privs(target, is_cdb):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 def query_curr_sessions(target, status=None):
     sql = '''select * from gv$session where username is not null '''
     if status:
@@ -702,6 +715,7 @@ def query_curr_sessions(target, status=None):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
+@lowdfcol
 def query_cursor_efficiency(target):
     sql = """select a.inst_id,
         'session_cached_cursors'  parameter,
@@ -765,6 +779,7 @@ def query_cursor_efficiency(target):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
+@lowdfcol
 def query_pin_plsql(target):
     sql = """select * from (select con_id, owner, name, type, sum(sharable_mem) sharable_mem
             from gv$db_object_cache
@@ -776,6 +791,7 @@ def query_pin_plsql(target):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
+@lowdfcol
 def query_pin_sql(target):
     sql = """select * from (select con_id,sql_text, sum(sharable_mem) sharable_mem, sum(invalidations) invalidations, sum(loads) loads
                 from gv$sql
@@ -786,6 +802,7 @@ def query_pin_sql(target):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
+@lowdfcol
 def query_redundent_idx(target):
     sql = """select
             o1.name||'.'||n1.name  redundant_index,
@@ -832,6 +849,7 @@ def query_redundent_idx(target):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
+@lowdfcol
 def query_low_density_idx(target):
     sql = """select /*+ ordered */
             u.name ||'.'|| o.name  index_name,
@@ -887,7 +905,7 @@ def query_low_density_idx(target):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 def query_row_migration_tab(target):
     sql = """select
             u.name ||'.'|| o.name  table_name,
@@ -961,7 +979,7 @@ def query_row_migration_tab(target):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 def query_tab_density(target):
     sql = """select /*+ ordered */
                 u.name ||'.'|| o.name  table_name,
@@ -1026,7 +1044,7 @@ def query_tab_density(target):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 def query_perf_load(target, bdate, edate, is_cdb):
     if is_cdb:
         sql = '''with sess_count_grpby_sec as (
@@ -1074,6 +1092,7 @@ def query_perf_load(target, bdate, edate, is_cdb):
     df = pd.read_sql_query(sql, engine, params=[bdate, edate, bdate, edate])
     return df
 
+@lowdfcol
 def query_ash_timemodel(target, bdate, edate, is_cdb):
     if is_cdb:
         sql = """select con_id,to_char(trunc((sample_time),'HH'),'MM-DD HH24:MI') TM, state, count(*)/360 sess_cnt
@@ -1105,7 +1124,7 @@ def query_ash_timemodel(target, bdate, edate, is_cdb):
     df = pd.read_sql_query(sql, engine, params=[bdate, edate])
     return df
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_quest_memory(target):
     sql = '''SELECT   a.memory_component, a.memory_size, a.parent_memory_component,
@@ -1553,7 +1572,7 @@ def query_quest_memory(target):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_autotasks(target, is_cdb):
     if is_cdb:
@@ -1573,7 +1592,7 @@ def query_autotasks(target, is_cdb):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_sched_jobs(target, is_cdb):
     if is_cdb:
@@ -1589,13 +1608,14 @@ def query_sched_jobs(target, is_cdb):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_event_class(target):
     sql = '''select distinct name, wait_class from v$event_name'''
     engine = st.session_state.connections_defined[target]
     return pd.read_sql(sql, engine)
 
+@lowdfcol
 def query_awr_latch(target, bdate, edate, is_cdb):
     if is_cdb:
         sql = '''select * from (select con_id,
@@ -1696,7 +1716,7 @@ def query_awr_latch(target, bdate, edate, is_cdb):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql_query(sql, engine, params=[bdate, edate])
 
-
+@lowdfcol
 def query_awr_bg_event(target, bdate, edate, is_cdb):
     if is_cdb:
         sql = '''select * from (select con_id,
@@ -1797,7 +1817,7 @@ def query_awr_bg_event(target, bdate, edate, is_cdb):
     engine = st.session_state.connections_defined[target]
     return pd.read_sql_query(sql, engine, params=[bdate, edate])
 
-
+@lowdfcol
 @functools.lru_cache()
 def query_awr_generic(target, bdate, edate, awr_table, stat_name_column, stat_value_column, is_cdb):
     if is_cdb:
@@ -1899,6 +1919,7 @@ def query_awr_generic(target, bdate, edate, awr_table, stat_name_column, stat_va
     engine = st.session_state.connections_defined[target]
     return pd.read_sql_query(sql, engine, params=[bdate, edate])
 
+@lowdfcol
 def query_awr_time_model(target, bdate, edate, is_cdb):
     if is_cdb:
         sql = '''select con_id,dbid,snap_id,instance_number,stat_name,begin_interval_time,end_interval_time,
@@ -2035,6 +2056,7 @@ def layer_df(data:pd.DataFrame, parent_column, id_column,
             layer_df(data, parent_column, id_column, name_label, value_label, name_property, value_property,
                      t_obj['children'], item[id_column])
 
+@lowdfcol
 def query_uncommit_tx(target, is_cdb):
     if is_cdb:
         sql = """select s.con_id,s.inst_id, s.sid, start_time, username, r.name undo_name,  
@@ -2063,6 +2085,7 @@ def query_uncommit_tx(target, is_cdb):
 # col MAXQUERYLEN format 999, 999, 999   heading "Max Query|Length"
 # col TUNED_UNDORETENTION format 999, 999, 999  heading "Auto-Ajusted|Undo Retention"
 # col hours format 999, 999 heading "Tuned|(HRs)"
+@lowdfcol
 def query_undo_stat(target):
     sql = """select inst_id, to_char(begin_time,'MM/DD/YYYY HH24:MI') begin_time, 
                 UNXPSTEALCNT, EXPSTEALCNT , SSOLDERRCNT, NOSPACEERRCNT, MAXQUERYLEN,
