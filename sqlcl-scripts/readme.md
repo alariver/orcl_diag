@@ -32,6 +32,8 @@ alter user c##check set container_data=all container=current;
 ```
 
 ## CDB 环境，连接到root cdb ,执行 gather_cdb.sql
+执行前要确认当前文件夹中已经创建output文件夹，用于存储产生的数据，如果已有output文件夹，应考备份、清空
+
 ```
 SQL> @ gather_cdb
 ```
