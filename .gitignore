@@ -7,7 +7,7 @@ share/
 dist/
 build/
 *.gz
-sqlcl-scripts/output
+sqlcl-scripts/output/*.csv
 gensql.py
 *.json
 *.tpl
