@@ -4,7 +4,6 @@ etc/
 include/
 lib/
 share/
-dist/
 build/
 *.gz
 sqlcl-scripts/output/*.csv
