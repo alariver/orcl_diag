@@ -12,11 +12,15 @@ import pyecharts.options as opts
 from pyecharts.globals import ThemeType
 from streamlit_echarts import st_pyecharts
 from pyecharts.faker import Faker
+from st_aggrid import AgGrid
 
 from streamlit_echarts import st_echarts
 
 from io import BytesIO, StringIO
 import tarfile
+
+import warnings
+warnings.filterwarnings('ignore')
 
 from queryUtil import *
 
@@ -479,14 +483,17 @@ with profile_placeholder.container():
         if not file_uploaded:
             df2tar(df_bakup, tar_file, 'backup-info.csv')
         # if df_bakup.shape[0]>0:
-        df_bakup['end_time'] = pd.to_datetime(df_bakup['end_time'])
+        
+        df_bakup['end_time'] = pd.to_datetime(df_bakup['end_time']).fillna(str(datetime.datetime.now()))
         df_bakup['start_time'] = pd.to_datetime(df_bakup['start_time'])
+        
         df_bakup['elapsed'] = df_bakup['end_time'] - df_bakup['start_time']
-        df_bakup['elapsed'] = df_bakup['elapsed'].apply(lambda x: str(
-            round(pd.Timedelta(x).total_seconds() % 86400.0 / 3600.0)) + ' Hr')
+        
+        # df_bakup['elapsed'] = df_bakup['elapsed'].apply(lambda x: str(
+        #     round(pd.Timedelta(x).total_seconds() % 86400.0 / 3600.0)) + ' Hr')
         # df_bakup.info()
 
-        st.dataframe(df_bakup.rename(columns=translate_word))
+        AgGrid(df_bakup.rename(columns=translate_word))
 
     st.header('FRA 信息汇总(MB)')
     df_fra = query_fra(st.session_state.selected_conn
@@ -524,7 +531,7 @@ with profile_placeholder.container():
     if not file_uploaded:
         df2tar(df_expu, tar_file, 'expiring-user.csv')
 
-    st.write(df_expu.rename(columns=translate_word))
+    AgGrid(df_expu.rename(columns=translate_word))
 
     st.header('用户及角色分配')
     df_users = query_user_privs(
@@ -542,7 +549,7 @@ with profile_placeholder.container():
             'name', 'username', 'default_tablespace', 'temporary_tablespace',
             'granted_role', 'default_role'
         ]]
-    st.write(df_users.rename(columns=translate_word))
+    AgGrid(df_users.rename(columns=translate_word))
 
     st.header('Cursor使用效率')
     df_cur_eff = query_cursor_efficiency(
@@ -642,6 +649,9 @@ if show_storage_file:
             lambda x: round(x / 1048576, 2))
         df_ptbspc['file_free_space'] = df_ptbspc['file_free_space'].apply(
             lambda x: round(x / 1048576, 2))
+        df_ptbspc['usage_percent']=100-(df_ptbspc['file_free_space']*100/df_ptbspc['file_size']).apply(
+            lambda x: round(x, 2)
+        )
         st.write(df_ptbspc.rename(columns=translate_word))
     else:
         st.warning('数据未存储')
@@ -1095,11 +1105,14 @@ if show_current_sessions:
 
         if sess_status and sess_status != 'ALL':
             df_c_sess = df_c_sess.loc[df_c_sess['status'] == sess_status]
-        st.write(df_c_sess.rename(columns=translate_word))
+        AgGrid(df_c_sess.rename(columns=translate_word))
         # fig, ax = plt.subplots()
         container = st.empty()
         with container.container():
-            col1, col2, col3 = st.columns(3)
+            # col1, col2, col3 = st.columns(3)
+            col1 = st.empty()
+            col2 = st.empty()
+            col3 = st.empty()
             with col1:
                 grp = df_c_sess.groupby(['username',
                                          'machine']).size().reset_index()

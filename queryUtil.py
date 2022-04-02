@@ -69,6 +69,8 @@ def translate_word(name):
         'free': '空闲',
         'usedbytes': '已用大小',
         'ten_min_timestr': '时间(10分钟)',
+        'usage': '使用',
+        'percent': '%'
         
     }
     if name.lower() in oracle_dictionary:
@@ -101,9 +103,9 @@ def query_database(target):
 @functools.lru_cache()
 def query_patchinfo(target):
     # engine = st.session_state.connections_defined[target]
-    return pd.read_sql('''select   ACTION||':'||NAMESPACE||':'||VERSION||':'||ID||':'||COMMENTS Patch_Info
-        from sys.registry$history
-        where action_time = (select max(action_time) from sys.registry$history)''', st.session_state.connections_defined[target])
+    return pd.read_sql('''select action_time,  ACTION||':'||NAMESPACE||':'||VERSION||':'||ID||':'||COMMENTS Patch_Info
+        from sys.registry$history order by action_time desc
+        /* where action_time = (select max(action_time) from sys.registry$history) */''', st.session_state.connections_defined[target])
 
 @lowdfcol
 @functools.lru_cache()
