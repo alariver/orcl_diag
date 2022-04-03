@@ -70,3 +70,4 @@ set feed off
 @@ temp_tablespace_cdb 
 @@ awr_latch_cdb 
 @@ topsql_appw_pe_cdb 
+@@ ash_tmod_cdb

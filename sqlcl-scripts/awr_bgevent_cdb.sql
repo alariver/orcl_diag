@@ -4,7 +4,7 @@ SPOOL 'output/awr-bg-event-wait.csv';
 select * from (select con_id,
                     dbid,
                     snap_id,
-                    instance_number,event_name,
+                    instance_number,event_name state_name,
                     begin_interval_time,
                     end_interval_time,
                     wait_time,

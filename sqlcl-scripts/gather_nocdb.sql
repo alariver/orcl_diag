@@ -71,3 +71,4 @@ set feed off
 @@ sql_summary_nocdb 
 @@ awr_sga_nocdb
 @@ idle_events
+@@ ash_tmod_nocdb

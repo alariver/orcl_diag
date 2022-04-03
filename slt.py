@@ -120,6 +120,7 @@ def util_gen_awr_section(section_name,
         if is_cdb:
             df = df.merge(df_pdb[['con_id', 'name']], on='con_id')
             _s = filter_pdb(df, 'name')
+            df = df.rename(columns={'event_name': 'stat_name'})
             df = df.loc[_s, [
                 'name', 'instance_number', 'stat_name', 'begin_interval_time',
                 'wait_time', 'wait_time_delta', 'waits_var'
@@ -133,7 +134,8 @@ def util_gen_awr_section(section_name,
         df['begin_interval_time'] = df['begin_interval_time'].apply(
             lambda x: datetime.datetime.strftime(x, '%m-%d %H:%M'))
         if st.checkbox(f'显示AWR {section_name} 原始数据'):
-            st.write(df.rename(columns=translate_word))
+            # st.write(df.info())
+            AgGrid(df.rename(columns=translate_word))
         # latch chart， 每个container一个单独的chart， instance_number+latch_name 决定series， begin_interval_date 作为x轴
         for con_name in df['name'].unique():
             # st.title(con_name + ' 历史Latch等待， 数据来源AWR')
@@ -997,15 +999,16 @@ if show_io_statistics:
             if is_cdb:
                 df_fio = df_fio.merge(df_pdb[['con_id', 'name']], on='con_id')
                 _s = filter_pdb(df_fio, 'name')
+                df_fio.columns
                 df_fio = df_fio.loc[_s, [
                     'name', 'file_name', 'phyrds', 'singleblkrds', 'readtim',
-                    'writetim', 'singleblkrdtim', 'avgiotm', 'lstiotim',
+                    'writetim', 'singleblkrdtim', 'avgiotim', 'lstiotim',
                     'miniotim', 'maxiortm', 'maxiowtm'
                 ]]
             else:
                 df_fio = df_fio[[
                     'file_name', 'phyrds', 'singleblkrds', 'readtim',
-                    'writetim', 'singleblkrdtim', 'avgiotm', 'lstiotim',
+                    'writetim', 'singleblkrdtim', 'avgiotim', 'lstiotim',
                     'miniotim', 'maxiortm', 'maxiowtm'
                 ]]
             st.write(df_fio.rename(columns=translate_word))
@@ -1025,13 +1028,13 @@ if show_io_statistics:
                 _s = filter_pdb(df_tfio, 'name')
                 df_tfio = df_tfio.loc[_s, [
                     'name', 'file_name', 'phyrds', 'singleblkrds', 'readtim',
-                    'writetim', 'singleblkrdtim', 'avgiotm', 'lstiotim',
+                    'writetim', 'singleblkrdtim', 'avgiotim', 'lstiotim',
                     'miniotim', 'maxiortm', 'maxiowtm'
                 ]]
             else:
                 df_tfio = df_tfio[[
                     'file_name', 'phyrds', 'singleblkrds', 'readtim',
-                    'writetim', 'singleblkrdtim', 'avgiotm', 'lstiotim',
+                    'writetim', 'singleblkrdtim', 'avgiotim', 'lstiotim',
                     'miniotim', 'maxiortm', 'maxiowtm'
                 ]]
             st.write(df_tfio.rename(columns=translate_word))
@@ -1518,6 +1521,7 @@ if show_awr_loads:
             is_cdb) if not file_uploaded else df_from_tar('awr-latches')
         if not file_uploaded:
             df2tar(df_awr_latch, tar_file, 'awr-latches.csv')
+        # df_awr_latch.info()
         if df_awr_latch is not None:
             if is_cdb:
                 df_awr_latch = df_awr_latch.merge(df_pdb[['con_id', 'name']],
@@ -1534,6 +1538,7 @@ if show_awr_loads:
                     'begin_interval_time', 'wait_time', 'wait_time_delta',
                     'waits_var'
                 ]]
+            df_awr_latch['begin_interval_time'] = pd.to_datetime(df_awr_latch['begin_interval_time'])
             df_awr_latch['begin_interval_time'] = df_awr_latch[
                 'begin_interval_time'].apply(
                     lambda x: datetime.datetime.strftime(x, '%m-%d %H:%M'))
